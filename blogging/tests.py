@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from blogging.models import Post, Category
 import datetime
 from django.utils.timezone import utc
+import pdb
 
 class PostTestCase(TestCase):
     fixtures = ['blogging_test_fixture.json', ]
@@ -10,6 +11,7 @@ class PostTestCase(TestCase):
     def setUp(self):
         self.now = datetime.datetime.utcnow().replace(tzinfo=utc)
         self.timedelta = datetime.timedelta(15)
+        pdb.set_trace()
         author = User.objects.get(pk=1)
         for count in range(1, 11):
             post = Post(title="Post %d Title" % count,
@@ -22,7 +24,7 @@ class PostTestCase(TestCase):
             post.save()
             
     # add this test method to the PostTestCase
-    def test_string_representation_post(self):
+    '''def test_string_representation_post(self):
         expected = "This is a title"
         p1 = Post(title=expected)
         actual = str(p1)
@@ -46,4 +48,15 @@ class PostTestCase(TestCase):
             if count < 6:
                 self.assertContains(resp, title, count=1)
             else:
-                self.assertNotContains(resp, title)
+                self.assertNotContains(resp, title)'''
+                
+    def test_details_only_published(self):
+        for count in range(1, 11):
+            title = "Post %d Title" % count
+            post = Post.objects.get(title=title)
+            resp = self.client.get('/posts/%d/' % post.pk)
+            if count < 6:
+                self.assertEqual(resp.status_code, 200)
+                self.assertContains(resp, title)
+            else:
+                self.assertEqual(resp.status_code, 404)
